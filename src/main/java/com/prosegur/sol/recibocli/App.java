@@ -30,18 +30,7 @@ public class App {
 		properties.load(App.class.getClassLoader()
 				.getResourceAsStream("application.properties"));
 		System.out.println("version " + properties.getProperty("version"));
-		return new BaseInfo(preparePathTFS(properties));
-	}
-
-	private static String preparePathTFS(Properties properties) {
-		String basePath = properties.getProperty("basePath");
-		String tfsFolder = properties.getProperty("tfsFolder");
-		String pathBranch = properties.getProperty("pathBranch");
-		String pathTFS = properties.getProperty("pathTFS");
-		String pathReports = basePath.replace("$tfsFolder", tfsFolder)
-				.replace("$pathBranch", pathBranch).concat(pathTFS);
-		System.out.println("Buscando os recibos de " + pathReports);
-		return pathReports;
+		return new BaseInfo(properties);
 	}
 
 	private static File selectReciboToWork(String basePathJasper) {

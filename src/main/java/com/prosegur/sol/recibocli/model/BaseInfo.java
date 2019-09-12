@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 
@@ -16,9 +17,23 @@ public class BaseInfo {
 	private String pathTfs;
 	private File folderSelectedRecibo;
 	private File folderSelectedReciboDev;
-
+	private Properties properties;
+	private String basePath;
+	
 	public BaseInfo(String pathTfs) {
 		this.pathTfs = pathTfs;
+	}
+
+	public BaseInfo(Properties properties) {
+		this.properties = properties;
+		this.basePath = properties.getProperty("basePath");
+		String tfsFolder = properties.getProperty("tfsFolder");
+		String pathBranch = properties.getProperty("pathBranch");
+		String pathTFS = properties.getProperty("pathTFS");
+		String pathReports = basePath.replace("$tfsFolder", tfsFolder)
+				.replace("$pathBranch", pathBranch).concat(pathTFS);
+		System.out.println("Buscando os recibos de " + pathReports);
+		this.pathTfs = pathReports;
 	}
 
 	public boolean hasDevelopmentStarted() {
@@ -62,13 +77,16 @@ public class BaseInfo {
 			warnTFS(false);
 			System.exit(0);
 		} catch (IOException e) {
-			System.out.println("Os arquivos .jrxml estão com checkout?\nA pasta dev está fechada?\nO iReport está fechado?");
+			System.out.println(
+					"Os arquivos .jrxml estão com checkout?\nA pasta dev está fechada?\nO iReport está fechado?");
 		}
 	}
 
 	private void createWorkspace() throws IOException {
 		FileUtils.copyDirectory(folderSelectedRecibo, folderSelectedReciboDev);
 		Files.delete(new File(folderSelectedReciboDev, DEV_FOLDER).toPath());
+		new ScriptletLoader(folderSelectedReciboDev, properties)
+			.load();
 	}
 
 	private void warnTFS(boolean checkout) {
