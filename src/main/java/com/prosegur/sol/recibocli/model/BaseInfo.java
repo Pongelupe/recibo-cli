@@ -19,7 +19,7 @@ public class BaseInfo {
 	private File folderSelectedReciboDev;
 	private Properties properties;
 	private String basePath;
-	
+
 	public BaseInfo(String pathTfs) {
 		this.pathTfs = pathTfs;
 	}
@@ -73,6 +73,19 @@ public class BaseInfo {
 					folderSelectedRecibo);
 			System.out.println("Alterações levadas\nDeletando o workspace");
 			FileUtils.deleteDirectory(folderSelectedReciboDev);
+			Arrays.asList(folderSelectedRecibo.listFiles()).stream()
+					.filter(f -> !f.getName().endsWith(".jrxml")).forEach(f -> {
+						try {
+							if (f.isDirectory()) {
+								FileUtils.deleteDirectory(f);
+							} else {
+								FileUtils.forceDelete(f);
+							}
+						} catch (IOException e) {
+							System.out
+									.println("Error ao deletar " + f.getName());
+						}
+					});
 			System.out.println("Processamento concluído!");
 			warnTFS(false);
 			System.exit(0);
@@ -85,8 +98,7 @@ public class BaseInfo {
 	private void createWorkspace() throws IOException {
 		FileUtils.copyDirectory(folderSelectedRecibo, folderSelectedReciboDev);
 		Files.delete(new File(folderSelectedReciboDev, DEV_FOLDER).toPath());
-		new ScriptletLoader(folderSelectedReciboDev, properties)
-			.load();
+		new ScriptletLoader(folderSelectedReciboDev, properties).load();
 	}
 
 	private void warnTFS(boolean checkout) {

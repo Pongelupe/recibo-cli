@@ -110,7 +110,7 @@ public class ScriptletLoader {
 
 	private void compileStub(String pathStub) throws Exception {
 		String jdk7Home = properties.getProperty("jdk7Home");
-		ProcessBuilder builder = new ProcessBuilder("cmd.exe",
+		ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c",
 				"\"" + jdk7Home + "bin\\javac.exe\" " + pathStub);
 		builder.redirectErrorStream(true);
 		// builder.start();
