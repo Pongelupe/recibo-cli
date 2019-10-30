@@ -34,6 +34,7 @@ public class ScriptletLoader {
 	private static final Pattern METHOD_SIGNATURE_REGEX = Pattern.compile(
 			"public\\s\\w+\\s\\w+\\s?\\(.+\\)\\s?(throws)?.*\\{",
 			Pattern.MULTILINE);
+	private static final Pattern CONST_VARIABLE_REGEX = Pattern.compile("public\\s(static)\\s((final)\\s)?\\w+\\s\\w+\\s?(=)(.*)(;)");
 
 	private File folderSelectedReciboDev;
 	private Properties properties;
@@ -151,12 +152,23 @@ public class ScriptletLoader {
 		loadImports(bw);
 		bw.write("public class " + clazzName + " {\n\n");
 		bw.write("public " + clazzName + "() {}\n\n");
-		writeMethods(bw, br);
+		String javaClass = IOUtils.toString(br);
+		writeConstantes(bw, javaClass);
+		writeMethods(bw, javaClass);
 		bw.write("}");
 
 		br.close();
 		bw.close();
 		return stub;
+	}
+
+	private void writeConstantes(BufferedWriter bw, String javaClass) throws IOException {
+		Matcher matcher = CONST_VARIABLE_REGEX.matcher(javaClass);
+		while (matcher.find()) {
+			String constant = matcher.group();
+			bw.write(String.format("\t %s%n", constant));
+		}
+		bw.write(String.format("%n%n"));
 	}
 
 	private void loadImports(BufferedWriter bw) throws IOException {
@@ -168,9 +180,9 @@ public class ScriptletLoader {
 		bw.write("import java.lang.*;\n\n");
 	}
 
-	private void writeMethods(BufferedWriter bw, BufferedReader br)
+	private void writeMethods(BufferedWriter bw, String javaClass)
 			throws IOException {
-		String javaClass = IOUtils.toString(br);
+
 		Matcher matcher = METHOD_SIGNATURE_REGEX.matcher(javaClass);
 		while (matcher.find()) {
 			String methodSignature = matcher.group();
